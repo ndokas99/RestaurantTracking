@@ -13,7 +13,7 @@ from os import path
 
 
 app = Flask(__name__)
-app.debug = True
+app.debug = False
 settings = {
     "SECRET_KEY": 'H475GGH58H4DG374H9GY48THT85',
     "SQLALCHEMY_DATABASE_URI": 'sqlite:///session.db',
@@ -176,8 +176,10 @@ def clearOldSession():
         conn.execute('vacuum')
 
 
+create_database()
+scheduler.add_job('DBMaintainer', clearOldSession, trigger='interval', seconds=300)
+scheduler.start()
+
+
 if __name__ == '__main__':
-    create_database()
-    scheduler.add_job('DBMaintainer', clearOldSession, trigger='interval', seconds=300)
-    scheduler.start()
-    app.run("0.0.0.0", port="5000")
+    app.run()
