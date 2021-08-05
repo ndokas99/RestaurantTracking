@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{{ url_for('static', filename='js/jquery-3.5.1.js') }}"></script>
+	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
+	<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    <style>
+		body {
+            background: url({{ url_for('static', filename='media/images.jpeg') }}) no-repeat fixed;
+            background-size: 100% 100%;
+		}
+		.card {
+			text-align: center;
+			width: 60% !important;
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			left: 20%;
+			transform: translate(0%, -50%);
+		}
+        #km{
+            margin: auto;
+        }
+		button:hover {
+			color: red !important;
+		}
+	</style>
+	<title>Restaurant Tracker</title>
+</head>
+<body>
+	<div class="card">
+		<h5 class="card-header">Restaurant Map Tracker</h5>
+		<div class="card-body">
+			<p class="card-text">Restaurants within entered distance are marked on the map when it loads; Default is 1km.</p>
+			<p class="card-text">The restaurants will be listed in order of closest to furthest.</p>
+			<p class="card-text">Press the button below to enable the location tracker and select <b>Allow</b>. You will be directed to map if tracker is functional.</p>
+            <input id="km" class="input-group-text" type="number" placeholder="Enter distance in km">
+		</div>
+		<h5 class="card-footer">
+			<button onClick="enable();" class="btn btn-dark">Track Locations</button>
+		</h5>
+	</div>
+	<script>
+		/*function success(x, y){
+			window.location.href = "/track/";
+		}
+		function fail(){
+			success();
+			$('#error').show();
+		}*/
+		function enable(){
+			if (navigator.geolocation) {
+				navigator.geolocation.getCurrentPosition(
+				(position) => {
+				    km = $('#km');
+                    let data = {
+                        x: position.coords.latitude,
+                        y: position.coords.longitude,
+                        d: km.val()==='' ? 1.0 : Number.parseFloat(km.val())
+                    };
+
+                    fetch('/track', {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(data),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            'content-type': "application/json"
+                        })
+                    }).then(()=>{
+                        window.location.href = '/showMap';
+                    });
+				},() => {
+                    enable();
+				});
+			}
+			else{
+				$(window).location.href = "/unsupported";
+			}
+		}
+	</script>
+</body>
+</html>
+
