@@ -1,8 +1,5 @@
 from flask import Flask, render_template, render_template_string, request, \
     make_response, jsonify, session, redirect, url_for
-from sqlalchemy.exc import IntegrityError
-from flask_sqlalchemy import SQLAlchemy
-from flask_apscheduler import APScheduler
 from folium import Map, Icon, Marker, Circle
 from overpy import Overpass
 from math import cos, sin, atan2, sqrt, pi
@@ -15,38 +12,18 @@ from os import path
 app = Flask(__name__)
 app.debug = False
 settings = {
-    "SECRET_KEY": 'H475GGH58H4DG374H9GY48THT85',
-    "SQLALCHEMY_DATABASE_URI": 'sqlite:///session.db',
-    "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+    "SECRET_KEY": 'H475GGH58H4DG374H9GY48THT85'
 }
 app.config.update(settings)
-db = SQLAlchemy(app)
-scheduler = APScheduler(app=app)
-
-
-class Session(db.Model):
-    sessionId = db.Column(db.Text, primary_key=True)
-    sessionMap = db.Column(db.Text, unique=True, nullable=True)
-    sessionTime = db.Column(db.DateTime(timezone=True), nullable=True)
-
 
 @app.route('/')
 def index():
+    session['sid'] = str(uuid4())
     try:
-        if Session.query.filter_by(sessionId=session['sid']).first():
-            return render_template("index.html")
-        else:
-            raise KeyError
-    except KeyError:
-        session['sid'] = str(uuid4())
-        try:
-            user = Session(sessionId=session['sid'], sessionTime=datetime.now())
-            db.session.add(user)
-            db.session.commit()
-            return render_template("index.html")
-        except IntegrityError:
-            del session['sid']
-            return url_for('index')
+        return render_template("index.html")
+    except IntegrityError:
+        del session['sid']
+        return url_for('index')
 
 
 @app.route('/unsupported')
@@ -142,43 +119,12 @@ def showMap():
                icon=Icon(color="blue", icon=icon, prefix="fa")
                ).add_to(mainMap)
 
-    try:
-        user = Session.query.filter_by(sessionId=session['sid']).first()
-        user.sessionMap = mainMap.get_root().render()
-        db.session.commit()
-    except AttributeError:
-        return redirect('/')
-
     return render_template("tracker.html", details=details)
 
 
 @app.route('/map')
 def embedMap():
-    try:
-        user = Session.query.filter_by(sessionId=session['sid']).first()
-        return render_template_string(user.sessionMap)
-    except (KeyError, TypeError, AttributeError):
-        return redirect('/', 500)
-
-
-def create_database():
-    if not path.exists("session.db"):
-        db.create_all(app=app)
-
-
-def clearOldSession():
-    for data in Session.query.all():
-        seconds = (datetime.now() - data.sessionTime).seconds
-        if seconds > 1800:
-            Session.query.filter_by(sessionId=data.sessionId).delete()
-            db.session.commit()
-    with db.engine.begin() as conn:
-        conn.execute('vacuum')
-
-
-create_database()
-scheduler.add_job('DBMaintainer', clearOldSession, trigger='interval', seconds=300)
-scheduler.start()
+    return redirect('/', 500)
 
 
 if __name__ == '__main__':
