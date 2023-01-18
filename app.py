@@ -122,7 +122,7 @@ def showMap():
 
 @app.route('/map')
 def embedMap():
-    return render_template_string(session["map"])
+    return render_template_string("<html>Testing</html>")
 
 
 if __name__ == '__main__':
