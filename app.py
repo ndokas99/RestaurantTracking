@@ -1,6 +1,6 @@
 from flask import Flask, render_template, render_template_string, request, \
     make_response, jsonify, session, redirect, url_for
-from flask.ext.session import Session
+from flask_session import Session
 from folium import Map, Icon, Marker, Circle
 from overpy import Overpass
 from math import cos, sin, atan2, sqrt, pi
