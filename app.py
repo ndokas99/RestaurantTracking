@@ -115,13 +115,14 @@ def showMap():
                tooltip=f"{detail['name']}",
                icon=Icon(color="blue", icon=icon, prefix="fa")
                ).add_to(mainMap)
-
+        
+    session["map"] = mainMap.get_root().render()
     return render_template("tracker.html", details=details)
 
 
 @app.route('/map')
 def embedMap():
-    return redirect('/', 500)
+    return render_template_string(session["map"])
 
 
 if __name__ == '__main__':
