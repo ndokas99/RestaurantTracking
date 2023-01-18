@@ -16,14 +16,11 @@ settings = {
 }
 app.config.update(settings)
 
+
 @app.route('/')
 def index():
     session['sid'] = str(uuid4())
-    try:
-        return render_template("index.html")
-    except IntegrityError:
-        del session['sid']
-        return url_for('index')
+    return render_template("index.html")
 
 
 @app.route('/unsupported')
