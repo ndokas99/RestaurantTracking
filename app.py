@@ -1,6 +1,5 @@
 from flask import Flask, render_template, render_template_string, request, \
     make_response, jsonify, session, redirect, url_for
-from flask_session import Session
 from folium import Map, Icon, Marker, Circle
 from overpy import Overpass
 from math import cos, sin, atan2, sqrt, pi
@@ -16,7 +15,7 @@ settings = {
     "SECRET_KEY": 'H475GGH58H4DG374H9GY48THT85'
 }
 app.config.update(settings)
-Session(app)
+map = None
 
 
 @app.route('/')
@@ -118,13 +117,15 @@ def showMap():
                icon=Icon(color="blue", icon=icon, prefix="fa")
                ).add_to(mainMap)
         
-    session["map"] = mainMap.get_root().render()
+    global map
+    map = mainMap.get_root().render()
+    
     return render_template("tracker.html", details=details)
 
 
 @app.route('/map')
 def embedMap():
-    return render_template_string(session.get("map","not set"))
+    return render_template_string(map)
 
 
 if __name__ == '__main__':
