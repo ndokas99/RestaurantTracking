@@ -1,3 +1,4 @@
 Flask==2.1.0
+Flask-Session==0.4.0
 folium==0.12.1
 overpy==0.6
